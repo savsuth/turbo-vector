@@ -12,8 +12,7 @@
 
 **153.6 MB of float32 embeddings compresses to 12.2 MB — a 12.6x reduction, with no training step.**
 
-turbovec_lite_rs is a compressed vector search index built on TurboQuant, a data-oblivious quantization algorithm from Google Research (ICLR 2026). Vectors are compressed and indexed the moment they're added — there's no codebook to fit first. The core is written in Rust with NEON SIMD and multi-threaded search, exposed to Python through PyO3 bindings.
-
+turbovec_lite_rs is a compressed vector search index built on TurboQuant, a data-oblivious quantization algorithm from Google Research (ICLR 2026). Vectors are compressed and indexed the moment they're added — there's no codebook to fit first.
 Two folders, two stages of the same project:
 
 - **`prototype/`** — a Python/NumPy implementation, used to work out and validate the algorithm.
