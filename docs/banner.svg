@@ -1,0 +1,28 @@
+<svg viewBox="0 0 1200 380" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b0d13"/>
+      <stop offset="100%" stop-color="#151824"/>
+    </linearGradient>
+    <linearGradient id="titleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="380" fill="url(#bgGrad)"/>
+  <text x="62" y="66" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" letter-spacing="3" fill="#6b7280">RUST + PYTHON · COMPRESSED VECTOR SEARCH</text>
+  <text x="60" y="150" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="58" font-weight="800" fill="url(#titleGrad)">turbovec_lite_rs</text>
+  <text x="62" y="195" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" fill="#9aa4b2">A from-scratch reimplementation of Google's TurboQuant,</text>
+  <text x="62" y="222" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" fill="#9aa4b2">built up from a Python prototype to a NEON-accelerated Rust core.</text>
+  <text x="845" y="75" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#8b93a1" text-anchor="middle">float32 (raw)</text>
+  <rect x="800" y="90"  width="90" height="24" rx="4" fill="#60a5fa" opacity="0.9"/>
+  <rect x="800" y="122" width="90" height="24" rx="4" fill="#60a5fa" opacity="0.85"/>
+  <rect x="800" y="154" width="90" height="24" rx="4" fill="#60a5fa" opacity="0.8"/>
+  <rect x="800" y="186" width="90" height="24" rx="4" fill="#60a5fa" opacity="0.75"/>
+  <rect x="800" y="218" width="90" height="24" rx="4" fill="#60a5fa" opacity="0.7"/>
+  <rect x="800" y="250" width="90" height="24" rx="4" fill="#60a5fa" opacity="0.65"/>
+  <line x1="905" y1="186" x2="985" y2="186" stroke="#f472b6" stroke-width="3"/>
+  <polygon points="985,178 1000,186 985,194" fill="#f472b6"/>
+  <text x="945" y="168" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#f472b6" text-anchor="middle">12.6x</text>
+  <text x="1061" y="125" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#8b93a1" text-anchor="middle">2-bit (packed)</text>
+</svg>

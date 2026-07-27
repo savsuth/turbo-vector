@@ -1,0 +1,16 @@
+[package]
+name = "turbovec_lite_rs"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "turbovec_lite_rs"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+rand = "0.8"
+rand_distr = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+bincode = "1.3"
+pyo3 = { version = "0.22", features = ["extension-module"] }
+rayon = "1.10"
