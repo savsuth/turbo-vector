@@ -14,9 +14,9 @@
 
 ### What this solves
 
-Systems that search by meaning rather than exact keyword matching — semantic search, recommendation engines, chatbots that look things up before answering — represent every piece of text as a vector embedding: a list of a few hundred numbers that captures what that text means. Finding similar items means comparing a query's vector against every vector already stored. That comparison is cheap, but storing the vectors isn't: each number is normally kept as a 32-bit float, so a single 384-number embedding takes about 1.5 KB, and a database of a few million documents can need tens of gigabytes of RAM just to hold the vectors, before any searching happens.
+Systems that search by meaning rather than exact keyword matching — semantic search, recommendation engines, chatbots that look things up before answering — represent every piece of text as a vector embedding: a list of a few hundred numbers that captures what that text means. Finding similar items means comparing a query's vector against every vector already stored. That comparison is cheap, but storing the vectors is not: each number is normally kept as a 32-bit float, so a single 384-number embedding takes about 1.5 KB, and a database of a few million documents can need tens of gigabytes of RAM just to hold the vectors, before any searching happens.
 
-turbovec_lite_rs shrinks that footprint by compressing each number in a vector down to 2 bits instead of 32 — a technique called quantization — while keeping search results almost as accurate as uncompressed search would give. It uses TurboQuant, a quantization algorithm from Google Research, and needs no separate training or calibration step: vectors are compressed and made searchable the moment they're added. The core is written in Rust with NEON SIMD and multi-threaded search, and it's usable from both Rust and Python through PyO3 bindings.
+turbovec_lite_rs shrinks that footprint by compressing each number in a vector down to 2 bits instead of 32 — a technique called quantization — while keeping search results almost as accurate as uncompressed search would give. It uses TurboQuant, a quantization algorithm from Google Research, and needs no separate training or calibration step: vectors are compressed and made searchable the moment they are added. The core is written in Rust with NEON SIMD and multi-threaded search, and it is usable from both Rust and Python through PyO3 bindings.
 
 Two folders, two stages of the same project:
 
@@ -65,7 +65,7 @@ let loaded = IdMapIndex::load("index.tvim").unwrap();
 
 ## How it works
 
-Compression works in five steps. The core idea is to reshape the vectors so that every number inside them follows a predictable statistical pattern — once that's true, they can be compressed aggressively without ever having to learn from the data first.
+Compression works in five steps. The core idea is to reshape the vectors so that every number inside them follows a predictable statistical pattern — once that is true, they can be compressed aggressively without ever having to learn from the data first.
 
 1. **Normalize.** Every vector is split into a direction and a magnitude — the direction is stored as a unit vector, and the magnitude is kept separately.
 2. **Rotate.** All vectors are multiplied by the same fixed random orthogonal matrix. This rotation preserves the distances between vectors, but it also makes each coordinate's distribution statistically predictable, which is what the quantizer relies on.
