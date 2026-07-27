@@ -12,18 +12,25 @@
 
 **153.6 MB of float32 embeddings compresses to 12.2 MB — a 12.6x reduction, with no training step.**
 
-turbovec_lite_rs is a compressed vector search index built on TurboQuant, a data-oblivious quantization algorithm from Google Research (ICLR 2026). Vectors are compressed and indexed the moment they're added — there's no codebook to fit first.
+### What this solves
+
+Systems that search by meaning rather than exact keyword matching — semantic search, recommendation engines, chatbots that look things up before answering — represent every piece of text as a vector embedding: a list of a few hundred numbers that captures what that text means. Finding similar items means comparing a query's vector against every vector already stored. That comparison is cheap, but storing the vectors isn't: each number is normally kept as a 32-bit float, so a single 384-number embedding takes about 1.5 KB, and a database of a few million documents can need tens of gigabytes of RAM just to hold the vectors, before any searching happens.
+
+turbovec_lite_rs shrinks that footprint by compressing each number in a vector down to 2 bits instead of 32 — a technique called quantization — while keeping search results almost as accurate as uncompressed search would give. It uses TurboQuant, a quantization algorithm from Google Research, and needs no separate training or calibration step: vectors are compressed and made searchable the moment they're added. The core is written in Rust with NEON SIMD and multi-threaded search, and it's usable from both Rust and Python through PyO3 bindings.
+
 Two folders, two stages of the same project:
 
-- **`prototype/`** — a Python/NumPy implementation, used to work out and validate the algorithm.
-- **`core/`** — the Rust port: SIMD, multi-threading, and Python bindings.
+- **`prototype/`** — a Python/NumPy implementation, used to work out and validate the algorithm before writing any Rust. Easier to debug, but not built for speed.
+- **`core/`** — the Rust port of the same algorithm: SIMD, multi-threading, and Python bindings, built for speed.
 
 - There is no training step — vectors are indexed as soon as they are added.
 - The search kernel uses NEON SIMD, and its output is verified against a scalar fallback for correctness.
 - Search runs in parallel across the index using `rayon`.
 - Python bindings are provided through PyO3 and built with maturin.
 - On 100K vectors, the fully serialized index achieves 12.6x compression.
-- At 2-bit quantization, the index reaches 0.84 recall@10 against exact search on real sentence embeddings.
+- At 2-bit quantization, the index reaches 0.84 recall@10 — meaning it still finds 84% of the true top-10 nearest neighbors — against exact search on real sentence embeddings.
+
+The example below shows the basic workflow: create an index, add vectors along with their ids, search it, remove an entry, and save it to disk so it can be reloaded later.
 
 ## Python
 
@@ -57,6 +64,8 @@ let loaded = IdMapIndex::load("index.tvim").unwrap();
 ```
 
 ## How it works
+
+Compression works in five steps. The core idea is to reshape the vectors so that every number inside them follows a predictable statistical pattern — once that's true, they can be compressed aggressively without ever having to learn from the data first.
 
 1. **Normalize.** Every vector is split into a direction and a magnitude — the direction is stored as a unit vector, and the magnitude is kept separately.
 2. **Rotate.** All vectors are multiplied by the same fixed random orthogonal matrix. This rotation preserves the distances between vectors, but it also makes each coordinate's distribution statistically predictable, which is what the quantizer relies on.
