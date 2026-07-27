@@ -10,8 +10,6 @@
 
 ---
 
-**153.6 MB of float32 embeddings compresses to 12.2 MB. Search stays within 1.5x of Apple's BLAS.**
-
 A 10 million document corpus takes 31 GB of RAM as float32. turbovec fits it in 4 GB - and searches it faster than FAISS.
 turbovec is a Rust vector index with Python bindings, built on Google Research's TurboQuant algorithm — a data-oblivious quantizer with near-optimal distortion and no separate training phase.
 
