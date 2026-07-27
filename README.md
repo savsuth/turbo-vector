@@ -85,7 +85,7 @@ At query time, the query vector is rotated into the same space and scored direct
   <img src="./docs/recall_chart.png" width="70%" />
 </p>
 
-The table below compares search speed across implementation stages, measured on 5K vectors at 384 dimensions over 100 queries on Apple Silicon, benchmarked against NumPy/BLAS:
+The table given compares search speed across implementation stages, measured on 5K vectors at 384 dimensions over 100 queries on Apple Silicon, benchmarked against NumPy/BLAS:
 
 | Version | Time/query | vs. NumPy |
 |---|---|---|
