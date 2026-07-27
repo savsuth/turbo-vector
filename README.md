@@ -94,12 +94,6 @@ The table given compares search speed across implementation stages, measured on 
 | NEON, release | 0.588 ms | 2.7x slower |
 | NEON + rayon, release | **0.461 ms** | **1.5x slower** |
 
-## Bugs found along the way
-
-- **The correction factor could go negative.** When a vector's reconstruction was nearly orthogonal to its original direction, the length-renormalization divisor was pushed toward zero, which in rare cases inverted the search ranking. This was fixed by clamping the correction factor to a bounded range.
-- **Debug builds hid the SIMD gain entirely.** `maturin develop` compiles in debug mode by default, and under that mode the NEON kernel measured 92x slower than expected. Building with `--release` restored the intended performance.
-- **A swapped tuple unpack caused a hard-to-trace panic.** Writing `DIM, N = vectors.shape` instead of `N, DIM = vectors.shape` on the Python side caused an out-of-bounds panic in Rust. Tracing it back to the single mismatched line in Python required following the full backtrace.
-
 ## Building
 
 ```bash
