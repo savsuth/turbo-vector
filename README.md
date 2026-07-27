@@ -12,7 +12,8 @@
 
 **153.6 MB of float32 embeddings compresses to 12.2 MB. Search stays within 1.5x of Apple's BLAS.**
 
-turbovec_lite_rs is a compressed vector search index. It stores embeddings at 2 bits per dimension instead of 32, with no separate training phase — vectors are compressed and indexed as soon as they're added. The core is written in Rust with NEON SIMD and multi-threaded search, exposed to Python through bindings.
+A 10 million document corpus takes 31 GB of RAM as float32. turbovec fits it in 4 GB - and searches it faster than FAISS.
+turbovec is a Rust vector index with Python bindings, built on Google Research's TurboQuant algorithm — a data-oblivious quantizer with near-optimal distortion and no separate training phase.
 
 Two folders, two stages of the same project:
 
