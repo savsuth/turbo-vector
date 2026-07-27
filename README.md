@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./docs/banner.svg" alt="turbovec_lite_rs banner" width="100%" />
+  <img src="./docs/banner.png" alt="turbovec_lite_rs banner" width="100%" />
 </p>
 
 <p align="center">
