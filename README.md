@@ -63,7 +63,7 @@ index.write("index.tvim").unwrap();
 let loaded = IdMapIndex::load("index.tvim").unwrap();
 ```
 
-## How it works
+## Procedure 
 
 Compression works in five steps. The core idea is to reshape the vectors so that every number inside them follows a predictable statistical pattern — once that is true, they can be compressed aggressively without ever having to learn from the data first.
 
