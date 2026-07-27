@@ -12,10 +12,12 @@
 
 **153.6 MB of float32 embeddings compresses to 12.2 MB. Search stays within 1.5x of Apple's BLAS.**
 
-A personal reimplementation of Google Research's **TurboQuant** algorithm — a vector quantizer with no separate training phase. Built as a study of the public [turbovec](https://github.com/RyanCodrai/turbovec) project, in two phases:
+turbovec_lite_rs is a compressed vector search index. It stores embeddings at 2 bits per dimension instead of 32, with no separate training phase — vectors are compressed and indexed as soon as they're added. The core is written in Rust with NEON SIMD and multi-threaded search, exposed to Python through bindings.
 
-- **`prototype/`** — Python/NumPy, used to validate the algorithm before writing Rust.
-- **`core/`** — Rust port: NEON SIMD, multi-threading, Python bindings via PyO3.
+Two folders, two stages of the same project:
+
+- **`prototype/`** — a Python/NumPy implementation, used to work out and validate the algorithm.
+- **`core/`** — the Rust port: SIMD, multi-threading, and Python bindings.
 
 - **No training step.** Vectors are indexed on add.
 - **NEON SIMD**, verified against a scalar fallback.
@@ -59,7 +61,7 @@ let loaded = IdMapIndex::load("index.tvim").unwrap();
 
 1. **Normalize.** Split each vector into direction (unit length) and magnitude.
 2. **Rotate.** Multiply every vector by the same fixed random orthogonal matrix. Distances between vectors don't change, but each coordinate becomes statistically predictable.
-3. **Quantize.** Since the post-rotation distribution is known, Lloyd-Max buckets are computed directly from the math — 4 buckets at 2-bit, 16 at 4-bit.
+3. **Quantize.** Since the post-rotation distribution is known, quantization buckets are computed directly from the math — 4 buckets at 2-bit, 16 at 4-bit.
 4. **Pack.** Four 2-bit codes per byte — ~16x raw compression before metadata.
 5. **Correct.** Quantization shrinks inner products between original and reconstructed vectors. A per-vector correction, computed once at insertion and clamped to a safe range, fixes this at search time.
 
@@ -105,10 +107,9 @@ maturin develop --release
 
 ## Scope
 
-Not a production library. Missing, relative to the original turbovec: bit widths other than 2-bit, an x86 SIMD kernel (NEON only), filtered search, framework integrations, a formal FAISS benchmark.
+Not a production library. Missing: bit widths other than 2-bit, an x86 SIMD kernel (NEON only), filtered search, framework integrations, a formal FAISS benchmark.
 
 ## References
 
-- [TurboQuant](https://arxiv.org/abs/2504.19874) — ICLR 2026
-- [RaBitQ](https://arxiv.org/abs/2405.12497) — SIGMOD 2024
-- [turbovec](https://github.com/RyanCodrai/turbovec) — the project this studies
+- [TurboQuant: Online Vector Quantization with Near-optimal Distortion Rate](https://arxiv.org/abs/2504.19874) — ICLR 2026
+- [RaBitQ: Quantizing High-Dimensional Vectors with a Theoretical Error Bound for Approximate Nearest Neighbor Search](https://arxiv.org/abs/2405.12497) — SIGMOD 2024
