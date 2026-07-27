@@ -10,20 +10,21 @@
 
 ---
 
-A 10 million document corpus takes 31 GB of RAM as float32. turbovec fits it in 4 GB - and searches it faster than FAISS.
-turbovec is a Rust vector index with Python bindings, built on Google Research's TurboQuant algorithm — a data-oblivious quantizer with near-optimal distortion and no separate training phase.
+**153.6 MB of float32 embeddings compresses to 12.2 MB — a 12.6x reduction, with no training step.**
+
+turbovec_lite_rs is a compressed vector search index built on TurboQuant, a data-oblivious quantization algorithm from Google Research (ICLR 2026). Vectors are compressed and indexed the moment they're added — there's no codebook to fit first. The core is written in Rust with NEON SIMD and multi-threaded search, exposed to Python through PyO3 bindings.
 
 Two folders, two stages of the same project:
 
 - **`prototype/`** — a Python/NumPy implementation, used to work out and validate the algorithm.
 - **`core/`** — the Rust port: SIMD, multi-threading, and Python bindings.
 
-- **No training step.** Vectors are indexed on add.
-- **NEON SIMD**, verified against a scalar fallback.
-- **Parallel search** via `rayon`.
-- **Python bindings** via PyO3 + maturin.
-- **12.6x compression**, measured on 100K vectors, full serialized index.
-- **0.84 recall@10** at 2-bit, measured against exact search on real sentence embeddings.
+- There is no training step — vectors are indexed as soon as they are added.
+- The search kernel uses NEON SIMD, and its output is verified against a scalar fallback for correctness.
+- Search runs in parallel across the index using `rayon`.
+- Python bindings are provided through PyO3 and built with maturin.
+- On 100K vectors, the fully serialized index achieves 12.6x compression.
+- At 2-bit quantization, the index reaches 0.84 recall@10 against exact search on real sentence embeddings.
 
 ## Python
 
@@ -58,13 +59,13 @@ let loaded = IdMapIndex::load("index.tvim").unwrap();
 
 ## How it works
 
-1. **Normalize.** Split each vector into direction (unit length) and magnitude.
-2. **Rotate.** Multiply every vector by the same fixed random orthogonal matrix. Distances between vectors don't change, but each coordinate becomes statistically predictable.
-3. **Quantize.** Since the post-rotation distribution is known, quantization buckets are computed directly from the math — 4 buckets at 2-bit, 16 at 4-bit.
-4. **Pack.** Four 2-bit codes per byte — ~16x raw compression before metadata.
-5. **Correct.** Quantization shrinks inner products between original and reconstructed vectors. A per-vector correction, computed once at insertion and clamped to a safe range, fixes this at search time.
+1. **Normalize.** Every vector is split into a direction and a magnitude — the direction is stored as a unit vector, and the magnitude is kept separately.
+2. **Rotate.** All vectors are multiplied by the same fixed random orthogonal matrix. This rotation preserves the distances between vectors, but it also makes each coordinate's distribution statistically predictable, which is what the quantizer relies on.
+3. **Quantize.** Because the post-rotation distribution is known in advance, the quantization buckets can be computed directly from the math rather than learned from data — 4 buckets for 2-bit precision, 16 for 4-bit.
+4. **Pack.** Four 2-bit codes are packed into a single byte, giving roughly 16x raw compression before metadata is accounted for.
+5. **Correct.** Quantization systematically shrinks the inner products between original and reconstructed vectors. To correct for this, a per-vector correction factor is computed once at insertion time, clamped to a safe range, and applied at search time.
 
-Search rotates the query into the same space and scores it directly against the packed database — no decompression step.
+At query time, the query vector is rotated into the same space and scored directly against the packed database — no decompression step is required.
 
 ## Results
 
@@ -76,7 +77,7 @@ Search rotates the query into the same space and scores it directly against the 
   <img src="./docs/recall_chart.png" width="70%" />
 </p>
 
-**Search speed** — 5K vectors, 384-dim, 100 queries, Apple Silicon, vs. NumPy/BLAS:
+The table below compares search speed across implementation stages, measured on 5K vectors at 384 dimensions over 100 queries on Apple Silicon, benchmarked against NumPy/BLAS:
 
 | Version | Time/query | vs. NumPy |
 |---|---|---|
@@ -87,9 +88,9 @@ Search rotates the query into the same space and scores it directly against the 
 
 ## Bugs found along the way
 
-- **Correction factor could go negative.** Near-orthogonal reconstructions drove the length-renormalization divisor toward zero, occasionally inverting search rankings. Fixed by clamping the correction to a bounded range.
-- **Debug builds hid the SIMD gain entirely.** `maturin develop` defaults to debug mode — the NEON kernel measured 92x slower than it should have, until built with `--release`.
-- **A swapped tuple unpack** (`DIM, N = vectors.shape` instead of `N, DIM = ...`) caused an out-of-bounds panic in Rust, traced back through a full backtrace to one line in Python.
+- **The correction factor could go negative.** When a vector's reconstruction was nearly orthogonal to its original direction, the length-renormalization divisor was pushed toward zero, which in rare cases inverted the search ranking. This was fixed by clamping the correction factor to a bounded range.
+- **Debug builds hid the SIMD gain entirely.** `maturin develop` compiles in debug mode by default, and under that mode the NEON kernel measured 92x slower than expected. Building with `--release` restored the intended performance.
+- **A swapped tuple unpack caused a hard-to-trace panic.** Writing `DIM, N = vectors.shape` instead of `N, DIM = vectors.shape` on the Python side caused an out-of-bounds panic in Rust. Tracing it back to the single mismatched line in Python required following the full backtrace.
 
 ## Building
 
@@ -98,7 +99,7 @@ cd core
 cargo test          # unit tests: rotation, quantization, packing, SIMD-vs-scalar parity
 ```
 
-`cargo test`/`cargo build` can't link once PyO3 bindings are in the crate — `extension-module` skips linking libpython on purpose. Verify through Python instead:
+Running `cargo test` or `cargo build` directly will fail to link once the PyO3 bindings are part of the crate, since the `extension-module` feature intentionally skips linking against libpython. To verify the build, go through Python instead:
 
 ```bash
 maturin develop --release
@@ -106,7 +107,7 @@ maturin develop --release
 
 ## Scope
 
-Not a production library. Missing: bit widths other than 2-bit, an x86 SIMD kernel (NEON only), filtered search, framework integrations, a formal FAISS benchmark.
+This is not a production-ready library. Several things are intentionally out of scope for now: bit widths other than 2-bit, an x86 SIMD kernel (only NEON is implemented), filtered search, integrations with existing retrieval frameworks, and a formal benchmark against FAISS.
 
 ## References
 
