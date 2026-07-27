@@ -3,9 +3,9 @@
 </p>
 
 <p align="center">
-  <img alt="license" src="https://img.shields.io/badge/license-MIT-2ea043?style=flat-square">
-  <img alt="rust" src="https://img.shields.io/badge/rust-000000?style=flat-square&logo=rust&logoColor=white">
-  <img alt="python" src="https://img.shields.io/badge/python-3776AB?style=flat-square&logo=python&logoColor=white">
+  <a href="./LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-2ea043?style=flat-square"></a>
+  <a href="https://www.rust-lang.org/"><img alt="rust" src="https://img.shields.io/badge/rust-000000?style=flat-square&logo=rust&logoColor=white"></a>
+  <a href="https://www.python.org/"><img alt="python" src="https://img.shields.io/badge/python-3776AB?style=flat-square&logo=python&logoColor=white"></a>
 </p>
 
 ---
